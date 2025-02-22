@@ -1,0 +1,15 @@
+IAM Role for Lambda Execution
+
+Create an IAM role with permissions to access EC2 and S3.
+
+IAM Role Trust Policy (AWS CLI Command)
+
+aws iam create-role --role-name LambdaBackupRole \
+  --assume-role-policy-document '{"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}, "Action": "sts:AssumeRole"}]}'
+
+Attach Necessary Policies
+
+aws iam attach-role-policy --role-name LambdaBackupRole --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+aws iam attach-role-policy --role-name LambdaBackupRole --policy-arn arn:aws:iam::aws:policy/AmazonEC2FullAccess
+aws iam attach-role-policy --role-name LambdaBackupRole --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+

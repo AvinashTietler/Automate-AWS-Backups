@@ -1,0 +1,23 @@
+Implement Snapshot Retention Policy (Deletes Snapshots Older than 7 Days)
+
+Lambda Function for Cleanup (cleanup_lambda.py)
+
+import boto3
+import datetime
+
+ec2 = boto3.client('ec2')
+
+def lambda_handler(event, context):
+    snapshots = ec2.describe_snapshots(OwnerIds=['self'])
+    threshold_date = datetime.datetime.now() - datetime.timedelta(days=7)
+    
+    for snapshot in snapshots['Snapshots']:
+        snapshot_date = snapshot['StartTime'].replace(tzinfo=None)
+        if snapshot_date < threshold_date:
+            ec2.delete_snapshot(SnapshotId=snapshot['SnapshotId'])
+    
+    return {
+        'statusCode': 200,
+        'body': 'Old Snapshots Deleted'
+    }
+

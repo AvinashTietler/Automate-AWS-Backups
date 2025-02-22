@@ -1,0 +1,40 @@
+Create AWS Lambda Function for Backup Automation
+
+Lambda Function Code (lambda_function.py)
+
+import boto3
+import datetime
+import json
+import os
+
+ec2 = boto3.client('ec2')
+s3 = boto3.client('s3')
+
+def lambda_handler(event, context):
+    instances = ec2.describe_instances(Filters=[{'Name': 'tag:Backup', 'Values': ['true']}])
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    backup_log = []
+    
+    for reservation in instances['Reservations']:
+        for instance in reservation['Instances']:
+            instance_id = instance['InstanceId']
+            for volume in instance['BlockDeviceMappings']:
+                if 'Ebs' in volume:
+                    volume_id = volume['Ebs']['VolumeId']
+                    snapshot = ec2.create_snapshot(VolumeId=volume_id, Description=f'Backup-{timestamp}')
+                    backup_log.append({
+                        'InstanceId': instance_id,
+                        'VolumeId': volume_id,
+                        'SnapshotId': snapshot['SnapshotId'],
+                        'Timestamp': timestamp
+                    })
+    
+    # Store logs in S3
+    log_data = json.dumps(backup_log, indent=4)
+    s3.put_object(Bucket='ec2-backup-logs-bucket', Key=f'backup-log-{timestamp}.json', Body=log_data)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Backup Process Completed')
+    }
+

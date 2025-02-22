@@ -1,0 +1,8 @@
+Deploy Lambda Function
+
+zip function.zip lambda_function.py
+aws lambda create-function --function-name EC2BackupLambda \
+  --runtime python3.9 --role arn:aws:iam::123456789012:role/LambdaBackupRole \
+  --handler lambda_function.lambda_handler --timeout 300 \
+  --memory-size 256 --zip-file fileb://function.zip
+

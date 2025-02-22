@@ -1,0 +1,15 @@
+Schedule Lambda Function using CloudWatch Events
+
+Create Event Rule (Runs Daily at Midnight UTC)
+
+aws events put-rule --schedule-expression "cron(0 0 * * ? *)" --name EC2BackupSchedule
+
+Attach Lambda as Target
+
+aws lambda add-permission --function-name EC2BackupLambda \
+  --statement-id EventInvokePermission --action "lambda:InvokeFunction" \
+  --principal events.amazonaws.com --source-arn arn:aws:events:us-east-1:123456789012:rule/EC2BackupSchedule
+
+aws events put-targets --rule EC2BackupSchedule --targets "Id"="1","Arn"="arn:aws:lambda:us-east-1:123456789012:function:EC2BackupLambda"
+
+
